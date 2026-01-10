@@ -1,1 +1,4 @@
-sample
+Jan 12 10:32:15 server sshd[1024]: Failed password for root from 203.0.113.5 port 55214 ssh2
+Jan 12 10:32:18 server sshd[1024]: Failed password for root from 203.0.113.5 port 55218 ssh2
+Jan 12 10:32:22 server sshd[1024]: Failed password for root from 203.0.113.5 port 55222 ssh2
+Jan 12 11:05:01 server sshd[2048]: Accepted password for user1 from 192.168.1.10 port 62001 ssh2
