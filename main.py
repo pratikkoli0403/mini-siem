@@ -2,6 +2,7 @@ from core.log_reader import LogReader
 from core.log_parser import LogParser
 from core.analyzer import Analyzer
 from core.risk_engine import RiskEngine
+from core.alert_manager import AlertManager
 
 reader = LogReader("logs/sample_auth.log")
 parser = LogParser()
@@ -15,6 +16,9 @@ suspicious_ips = analyzer.detect_failed_logins()
 risk_engine = RiskEngine()
 risk_report = risk_engine.calculate_risk(suspicious_ips)
 
-print("Risk Report:")
-for item in risk_report:
-    print(item)
+alert_manager = AlertManager()
+alerts = alert_manager.generate_alerts(risk_report)
+
+print("Security Alerts:")
+for alert in alerts:
+    print(alert)
