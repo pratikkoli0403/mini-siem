@@ -3,6 +3,7 @@ from core.log_parser import LogParser
 from core.analyzer import Analyzer
 from core.risk_engine import RiskEngine
 from core.alert_manager import AlertManager
+from core.report_generator import ReportGenerator
 
 reader = LogReader("logs/sample_auth.log")
 parser = LogParser()
@@ -19,6 +20,12 @@ risk_report = risk_engine.calculate_risk(suspicious_ips)
 alert_manager = AlertManager()
 alerts = alert_manager.generate_alerts(risk_report)
 
+report_generator = ReportGenerator()
+summary_report = report_generator.genrate_report(events, risk_report)
+
 print("Security Alerts:")
 for alert in alerts:
     print(alert)
+
+print("\nSummary report:")
+print(summary_report)
