@@ -1,11 +1,13 @@
+from config.setting import LOW_MAX, MEDIUM_MAX
+
 class RiskEngine:
     def calculate_risk(self, suspicious_ips):
         risk_report =[]
 
         for ip, count in suspicious_ips:
-            if count >= 8:
+            if count > MEDIUM_MAX:
                 severity = "high"
-            elif count >= 5:
+            elif count >= LOW_MAX:
                 severity = "medium"
             else:
                 severity = "low"

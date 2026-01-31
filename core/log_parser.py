@@ -22,8 +22,8 @@ class LogParser:
         if ip_match:
             source_ip = ip_match.group(1)
         
-        # Timestamp (simplified for now)
-        timestamp = log_line[:15]
+        timestamp_str = log_line[:15]
+        timestamp = datetime.strptime(timestamp_str, "%b %d %H:%M:%S")
 
         return Event(timestamp, source_ip, event_type, log_line)
     
