@@ -2,21 +2,22 @@ from config.setting import LOW_MAX, MEDIUM_MAX
 
 class RiskEngine:
     def calculate_risk(self, suspicious_ips):
-        risk_report =[]
+
+        risk_report = []
 
         for ip, count in suspicious_ips:
+
             if count > MEDIUM_MAX:
-                severity = "high"
+                severity = "HIGH"
             elif count >= LOW_MAX:
-                severity = "medium"
+                severity = "MEDIUM"
             else:
-                severity = "low"
+                severity = "LOW"
 
             risk_report.append({
                 "ip": ip,
                 "failed_attempts": count,
                 "severity": severity
             })
-        
-        return risk_report
 
+        return risk_report
