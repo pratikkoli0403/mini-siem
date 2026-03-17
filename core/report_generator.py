@@ -1,5 +1,5 @@
 class ReportGenerator:
-    def genrate_report(self, events, risk_reports):
+    def generate_report(self, events, risk_reports):
         report ={}
 
         report["total_events"] = len(events)
