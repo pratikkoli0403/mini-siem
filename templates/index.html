@@ -75,5 +75,37 @@
 </div>
 {% endif %}
 
+{% if ip_counts %}
+<div class="box">
+    <h2>Top Attacking IPs</h2>
+    <canvas id="attackChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const labels = {{ ip_counts.keys() | list | safe }};
+const data = {{ ip_counts.values() | list | safe }};
+
+const chartData = {
+    labels: labels,
+    datasets: [{
+        label: "Failed Login Attempts",
+        data: data,
+        backgroundColor: "rgba(255, 99, 132, 0.6)"
+    }]
+};
+
+const config = {
+    type: "bar",
+    data: chartData
+};
+
+new Chart(
+    document.getElementById("attackChart"),
+    config
+);
+</script>
+{% endif %}
 </body>
 </html>

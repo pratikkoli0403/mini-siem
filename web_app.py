@@ -14,10 +14,13 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+
     alerts = []
     report = None
+    ip_counts = {}
 
     if request.method == "POST":
+
         file = request.files["logfile"]
 
         if file:
@@ -28,6 +31,7 @@ def index():
             parser = LogParser()
 
             events = []
+
             for line in reader.read_logs():
                 event = parser.parse(line)
                 if event:
@@ -36,6 +40,9 @@ def index():
             analyzer = Analyzer(events)
             suspicious_ips = analyzer.detect_failed_logins()
 
+            for ip, attempts in suspicious_ips:
+                ip_counts[ip] = attempts
+
             risk_engine = RiskEngine()
             alerts_data = risk_engine.calculate_risk(suspicious_ips)
 
@@ -43,15 +50,19 @@ def index():
             alerts = alert_manager.generate_alerts(alerts_data)
 
             report_generator = ReportGenerator()
-
             report_data = report_generator.generate_report(events, alerts_data)
+
             report = {
                 "total_events": report_data["total_events"],
                 "suspicious_ips": report_data["suspicious_ips"],
                 "severity": report_data["severity_summary"]
             }
-    
 
-            return render_template("index.html", alerts=alerts, report=report)
+    return render_template(
+        "index.html",
+        alerts=alerts,
+        report=report,
+        ip_counts=ip_counts
+    )
 if __name__ == "__main__":
     app.run(debug=True)
