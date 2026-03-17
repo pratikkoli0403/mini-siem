@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Mini SIEM Log Analyzer</title>
-    <style>
-        body {
-            font-family: Arial;
-            margin: 40px;
-            background-color: #f5f5f5;
-        }
 
-        h1 {
-            color: #333;
-        }
+<title>Mini SIEM Log Analyzer</title>
 
-        .box {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            box-shadow: 0px 0px 5px rgba(0,0,0,0.1);
-        }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        button {
-            padding: 10px 15px;
-            background: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
+<style>
 
-        button:hover {
-            background: #0056b3;
-        }
-    </style>
+body{
+font-family: Arial;
+margin:40px;
+background:#f4f6f9;
+}
+
+.box{
+background:white;
+padding:20px;
+margin-top:20px;
+border-radius:8px;
+box-shadow:0px 2px 5px rgba(0,0,0,0.1);
+}
+
+button{
+padding:10px 15px;
+background:#007BFF;
+color:white;
+border:none;
+border-radius:5px;
+}
+
+</style>
+
 </head>
 
 <body>
@@ -40,72 +39,118 @@
 <h1>Mini SIEM Log Analyzer</h1>
 
 <div class="box">
-    <form method="POST" enctype="multipart/form-data">
-        <p>Select Log File:</p>
-        <input type="file" name="logfile" required>
-        <br><br>
-        <button type="submit">Analyze Logs</button>
-    </form>
+
+<form method="POST" enctype="multipart/form-data">
+
+<p>Select Log File:</p>
+
+<input type="file" name="logfile" required>
+
+<br><br>
+
+<button type="submit">Analyze Logs</button>
+
+</form>
+
 </div>
+
 
 {% if alerts %}
+
 <div class="box">
-    <h2>Security Alerts</h2>
-    <ul>
-        {% for alert in alerts %}
-        <li>{{ alert }}</li>
-        {% endfor %}
-    </ul>
+
+<h2>Security Alerts</h2>
+
+<ul>
+
+{% for alert in alerts %}
+
+<li>{{ alert }}</li>
+
+{% endfor %}
+
+</ul>
+
 </div>
+
 {% endif %}
+
+
 
 {% if report %}
+
 <div class="box">
-    <h2>Summary Report</h2>
 
-    <p><b>Total Events:</b> {{ report.total_events }}</p>
-    <p><b>Suspicious IPs:</b> {{ report.suspicious_ips }}</p>
+<h2>Summary Report</h2>
 
-    <h3>Severity Breakdown</h3>
-    <ul>
-        <li>HIGH: {{ report.severity.HIGH }}</li>
-        <li>MEDIUM: {{ report.severity.MEDIUM }}</li>
-        <li>LOW: {{ report.severity.LOW }}</li>
-    </ul>
+<p><b>Total Events:</b> {{ report.total_events }}</p>
+
+<p><b>Suspicious IPs:</b> {{ report.suspicious_ips }}</p>
+
+<h3>Severity Breakdown</h3>
+
+<ul>
+
+<li>HIGH: {{ report.severity.HIGH }}</li>
+
+<li>MEDIUM: {{ report.severity.MEDIUM }}</li>
+
+<li>LOW: {{ report.severity.LOW }}</li>
+
+</ul>
+
 </div>
+
 {% endif %}
+<div class="box">
+<a href="/download_report">
+<button>Download Security Report</button>
+</a>
+</div>
+
 
 {% if ip_counts %}
+
 <div class="box">
-    <h2>Top Attacking IPs</h2>
-    <canvas id="attackChart"></canvas>
+
+<h2>Top Attacking IPs</h2>
+
+<canvas id="attackChart"></canvas>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-const labels = {{ ip_counts.keys() | list | safe }};
-const data = {{ ip_counts.values() | list | safe }};
+
+const labels = {{ ip_counts.keys() | list | tojson }};
+
+const data = {{ ip_counts.values() | list | tojson }};
 
 const chartData = {
-    labels: labels,
-    datasets: [{
-        label: "Failed Login Attempts",
-        data: data,
-        backgroundColor: "rgba(255, 99, 132, 0.6)"
-    }]
-};
 
-const config = {
-    type: "bar",
-    data: chartData
+labels: labels,
+
+datasets: [{
+label: "Failed Login Attempts",
+data: data,
+backgroundColor: "rgba(255,99,132,0.6)"
+}]
+
 };
 
 new Chart(
-    document.getElementById("attackChart"),
-    config
+
+document.getElementById("attackChart"),
+{
+type:"bar",
+data:chartData
+}
+
 );
+
 </script>
+
 {% endif %}
+
+
 </body>
 </html>
