@@ -101,6 +101,55 @@ def download_report():
         download_name="siem_report.txt",
         mimetype="text/plain"
     )
+@app.route("/demo_attack")
+def demo_attack():
 
+    events = []
+
+    demo_logs = [
+        "Jan 12 10:01:01 server sshd[1234]: Failed password for root from 203.0.113.5 port 55231 ssh2",
+        "Jan 12 10:01:10 server sshd[1234]: Failed password for root from 203.0.113.5 port 55232 ssh2",
+        "Jan 12 10:01:20 server sshd[1234]: Failed password for root from 203.0.113.5 port 55233 ssh2",
+        "Jan 12 10:02:00 server sshd[1234]: Failed password for admin from 203.0.113.9 port 55240 ssh2",
+        "Jan 12 10:02:05 server sshd[1234]: Failed password for admin from 203.0.113.9 port 55241 ssh2",
+        "Jan 12 10:02:10 server sshd[1234]: Failed password for admin from 203.0.113.9 port 55242 ssh2"
+    ]
+
+    parser = LogParser()
+
+    for line in demo_logs:
+        event = parser.parse(line)
+        if event:
+            events.append(event)
+
+    analyzer = Analyzer(events)
+    suspicious_ips = analyzer.detect_failed_logins()
+
+    ip_counts = {}
+
+    for ip, attempts in suspicious_ips:
+        ip_counts[ip] = attempts
+
+    risk_engine = RiskEngine()
+    alerts_data = risk_engine.calculate_risk(suspicious_ips)
+
+    alert_manager = AlertManager()
+    alerts = alert_manager.generate_alerts(alerts_data)
+
+    report_generator = ReportGenerator()
+    report_data = report_generator.generate_report(events, alerts_data)
+
+    report = {
+        "total_events": report_data["total_events"],
+        "suspicious_ips": report_data["suspicious_ips"],
+        "severity": report_data["severity_summary"]
+    }
+
+    return render_template(
+        "index.html",
+        alerts=alerts,
+        report=report,
+        ip_counts=ip_counts
+    )
 if __name__ == "__main__":
     app.run(debug=True)

@@ -40,8 +40,7 @@ border-radius:5px;
 
 <div class="box">
 
-<form method="POST" enctype="multipart/form-data">
-
+<form action="/" method="POST" enctype="multipart/form-data">
 <p>Select Log File:</p>
 
 <input type="file" name="logfile" required>
@@ -74,7 +73,17 @@ border-radius:5px;
 </div>
 
 {% endif %}
+<div class="box">
 
+<a href="/demo_attack">
+
+<button style="background:#dc3545">
+Generate Demo Attack
+</button>
+
+</a>
+
+</div>
 
 
 {% if report %}
