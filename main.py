@@ -1,31 +1,42 @@
-from core.log_reader import LogReader
+from realtime import stream_logs
 from core.log_parser import LogParser
 from core.analyzer import Analyzer
 from core.risk_engine import RiskEngine
 from core.alert_manager import AlertManager
 from core.report_generator import ReportGenerator
+from core.geolocation import get_country
 
-reader = LogReader("logs/sample_auth.log")
 parser = LogParser()
+events = []
 
-logs = reader.read_logs()
-events =[parser.parse(log) for log in logs]
+def handle_log(line):
+    global events
 
-analyzer = Analyzer(events)
-suspicious_ips = analyzer.detect_failed_logins()
+    event = parser.parse(line)
 
-risk_engine = RiskEngine()
-risk_report = risk_engine.calculate_risk(suspicious_ips)
+    if event.event_type != "UNKNOWN":
+        events.append(event)
 
-alert_manager = AlertManager()
-alerts = alert_manager.generate_alerts(risk_report)
+        # 🌍 Add geolocation
+        country = get_country(event.source_ip)
 
-report_generator = ReportGenerator()
-summary_report = report_generator.genrate_report(events, risk_report)
+        print(f"[{event.event_type}] {event.source_ip} ({country})")
 
-print("Security Alerts:")
-for alert in alerts:
-    print(alert)
+        # Run pipeline every 5 events (lightweight real-time)
+        if len(events) % 5 == 0:
+            analyzer = Analyzer(events)
+            suspicious_ips = analyzer.detect_failed_logins()
 
-print("\nSummary report:")
-print(summary_report)
+            risk_engine = RiskEngine()
+            risk_report = risk_engine.calculate_risk(suspicious_ips)
+
+            alert_manager = AlertManager()
+            alerts = alert_manager.generate_alerts(risk_report)
+
+            print("\n🚨 Alerts:")
+            for alert in alerts:
+                print(alert)
+
+if __name__ == "__main__":
+    print("[+] Real-Time SIEM Started...\n")
+    stream_logs(handle_log)

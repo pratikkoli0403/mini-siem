@@ -1,165 +1,113 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<title>Mini SIEM Log Analyzer</title>
-
+<title>Mini SIEM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
-body{
-font-family: Arial;
-margin:40px;
-background:#f4f6f9;
+body { background:#0f172a; color:white; font-family:Arial; }
+.header { text-align:center; padding:20px; color:#38bdf8; }
+.nav { text-align:center; margin-bottom:20px; }
+.nav a {
+    padding:10px 15px;
+    background:#1e293b;
+    margin:5px;
+    border-radius:8px;
+    text-decoration:none;
+    color:white;
 }
-
-.box{
-background:white;
-padding:20px;
-margin-top:20px;
-border-radius:8px;
-box-shadow:0px 2px 5px rgba(0,0,0,0.1);
+.container { width:70%; margin:auto; }
+.card {
+    background:#1e293b;
+    padding:20px;
+    margin:15px 0;
+    border-radius:12px;
 }
-
-button{
-padding:10px 15px;
-background:#007BFF;
-color:white;
-border:none;
-border-radius:5px;
+.chart-container {
+    width:50%;
+    height:250px;
+    margin:auto;
 }
-
 </style>
-
 </head>
 
 <body>
 
-<h1>Mini SIEM Log Analyzer</h1>
+<h1 class="header">🛡 Mini SIEM Dashboard</h1>
 
-<div class="box">
+<div class="nav">
+<a href="/">Upload Mode</a>
+<a href="/live">Live Mode</a>
+<a href="/download_report">⬇ Download Report</a>
+</div>
 
-<form action="/" method="POST" enctype="multipart/form-data">
-<p>Select Log File:</p>
+<div class="container">
 
-<input type="file" name="logfile" required>
-
-<br><br>
-
-<button type="submit">Analyze Logs</button>
-
+{% if mode == "upload" %}
+<div class="card">
+<form method="POST" action="/" enctype="multipart/form-data">
+<input type="file" name="logfile">
+<button type="submit">Upload</button>
 </form>
-
 </div>
-
-
-{% if alerts %}
-
-<div class="box">
-
-<h2>Security Alerts</h2>
-
-<ul>
-
-{% for alert in alerts %}
-
-<li>{{ alert }}</li>
-
-{% endfor %}
-
-</ul>
-
-</div>
-
 {% endif %}
-<div class="box">
-
-<a href="/demo_attack">
-
-<button style="background:#dc3545">
-Generate Demo Attack
-</button>
-
-</a>
-
-</div>
-
 
 {% if report %}
+<div class="card">
+<h3>Summary</h3>
+<p>Total Events: {{ report.total_events }}</p>
+<p>Suspicious IPs: {{ report.suspicious_ips }}</p>
+</div>
 
-<div class="box">
-
-<h2>Summary Report</h2>
-
-<p><b>Total Events:</b> {{ report.total_events }}</p>
-
-<p><b>Suspicious IPs:</b> {{ report.suspicious_ips }}</p>
-
-<h3>Severity Breakdown</h3>
-
+<div class="card">
+<h3>Severity</h3>
 <ul>
-
-<li>HIGH: {{ report.severity.HIGH }}</li>
-
-<li>MEDIUM: {{ report.severity.MEDIUM }}</li>
-
-<li>LOW: {{ report.severity.LOW }}</li>
-
+{% for level, count in report.severity.items() %}
+<li>{{ level }} → {{ count }}</li>
+{% endfor %}
 </ul>
-
 </div>
-
 {% endif %}
-<div class="box">
-<a href="/download_report">
-<button>Download Security Report</button>
-</a>
+
+<div class="card">
+<h3>Suspicious IPs</h3>
+<ul>
+{% for ip, data in ip_counts.items() %}
+<li>{{ ip }} ({{ data.country }}) → {{ data.count }}</li>
+{% endfor %}
+</ul>
 </div>
 
+<div class="card">
+<h3>Alerts</h3>
+<ul>
+{% for alert in alerts %}
+<li style="color:red">{{ alert }}</li>
+{% endfor %}
+</ul>
+</div>
 
-{% if ip_counts %}
-
-<div class="box">
-
-<h2>Top Attacking IPs</h2>
-
-<canvas id="attackChart"></canvas>
+<div class="card chart-container">
+<canvas id="chart"></canvas>
+</div>
 
 </div>
 
 <script>
+const data = {{ ip_counts | tojson | safe }};
+const labels = Object.keys(data);
+const values = labels.map(ip => data[ip].count);
 
-const labels = {{ ip_counts.keys() | list | tojson }};
+new Chart(document.getElementById('chart'), {
+    type:'bar',
+    data:{ labels:labels, datasets:[{label:'Attacks', data:values}] },
+    options:{ responsive:true, maintainAspectRatio:false }
+});
 
-const data = {{ ip_counts.values() | list | tojson }};
-
-const chartData = {
-
-labels: labels,
-
-datasets: [{
-label: "Failed Login Attempts",
-data: data,
-backgroundColor: "rgba(255,99,132,0.6)"
-}]
-
-};
-
-new Chart(
-
-document.getElementById("attackChart"),
-{
-type:"bar",
-data:chartData
+if (window.location.pathname === "/live") {
+    setTimeout(() => location.reload(), 5000);
 }
-
-);
-
 </script>
-
-{% endif %}
-
 
 </body>
 </html>
