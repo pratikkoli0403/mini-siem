@@ -19,7 +19,9 @@ class LogParser:
             source_ip = ip_match.group(1)
 
         # ---------- FAILED LOGIN DETECTION ----------
-        if "Failed password" in log_line or "Connection closed by authenticating user" in log_line:
+        if ("Failed password" in log_line or 
+    	    "Connection closed by authenticating user" in log_line or 
+            "Invalid user" in log_line):
             event_type = "FAILED_LOGIN"
 
             if source_ip != "UNKNOWN":

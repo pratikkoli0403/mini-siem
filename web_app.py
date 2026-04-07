@@ -83,18 +83,30 @@ def index():
                            mode="upload")
 
 # ---------- LIVE ----------
+import os
+
 @app.route("/live")
 def live():
     parser = LogParser()
     events = []
 
-    with open("/var/log/auth.log", "r") as f:
-        lines = f.readlines()[-500:]
+    log_path = "/var/log/auth.log"
 
-        for line in lines:
-            event = parser.parse(line)
-            if event and event.event_type != "UNKNOWN":
-                events.append(event)
+    if not os.path.exists(log_path):
+        print("Log file not found")
+        lines = []
+    else:
+        try:
+            with open(log_path, "r") as f:
+                lines = f.readlines()[-500:]
+        except Exception as e:
+            print("Error reading log:", e)
+            lines = []
+
+    for line in lines:
+        event = parser.parse(line)
+        if event and event.event_type != "UNKNOWN":
+            events.append(event)
 
     alerts, report, ip_counts = process_events(events)
 
@@ -102,11 +114,12 @@ def live():
     latest_report = report
     latest_ip_counts = ip_counts
 
-    return render_template("index.html",
-                           alerts=alerts,
-                           report=report,
-                           ip_counts=ip_counts,
-                           mode="live")
+    return render_template(
+        "index.html",
+        alerts=alerts,
+        report=report,
+        ip_counts=ip_counts
+    )
 
 # ---------- DOWNLOAD ----------
 @app.route("/download_report")
@@ -138,4 +151,4 @@ def download_report():
                      mimetype="text/plain")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
